@@ -1,55 +1,60 @@
 from fastapi import APIRouter
-from database import get_connection
+from sqlalchemy import select, inspect
+
+from database.database import get_session, engine
+from models.database import Song, Artist, Playlist, Lyrics, Wallpaper, song_artists, playlist_songs
 
 router = APIRouter()
 
-# ---------- GENERIC TABLE VIEW ----------
-def fetch_all(table):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM {table}")
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
+
+def _model_to_dicts(model) -> list[dict]:
+    mapper = inspect(model)
+    with get_session() as session:
+        rows = session.scalars(select(model)).all()
+        return [{col.key: getattr(row, col.key) for col in mapper.mapper.column_attrs} for row in rows]
 
 
-# ---------- SONGS ----------
 @router.get("/songs")
 def debug_songs():
-    rows = fetch_all("songs")
+    rows = _model_to_dicts(Song)
     return {"count": len(rows), "data": rows}
 
 
-# ---------- ARTISTS ----------
 @router.get("/artists")
 def debug_artists():
-    rows = fetch_all("artists")
+    rows = _model_to_dicts(Artist)
     return {"count": len(rows), "data": rows}
 
 
-# ---------- SONG_ARTISTS ----------
 @router.get("/song-artists")
 def debug_song_artists():
-    rows = fetch_all("song_artists")
-    return {"count": len(rows), "data": rows}
+    with get_session() as session:
+        rows = session.execute(select(song_artists)).all()
+    data = [{"song_id": r.song_id, "artist_id": r.artist_id} for r in rows]
+    return {"count": len(data), "data": data}
 
 
-# ---------- PLAYLISTS ----------
 @router.get("/playlists")
 def debug_playlists():
-    rows = fetch_all("playlists")
+    rows = _model_to_dicts(Playlist)
     return {"count": len(rows), "data": rows}
 
 
-# ---------- PLAYLIST_SONGS ----------
 @router.get("/playlist-songs")
 def debug_playlist_songs():
-    rows = fetch_all("playlist_songs")
+    with get_session() as session:
+        rows = session.execute(select(playlist_songs)).all()
+    data = [{"playlist_id": r.playlist_id, "song_id": r.song_id, "position": r.position} for r in rows]
+    return {"count": len(data), "data": data}
+
+
+@router.get("/lyrics")
+def debug_lyrics():
+    rows = _model_to_dicts(Lyrics)
     return {"count": len(rows), "data": rows}
 
 
-# ---------- LYRICS ----------
-@router.get("/lyrics")
-def debug_lyrics():
-    rows = fetch_all("lyrics")
+@router.get("/wallpapers")
+def debug_wallpapers():
+    rows = _model_to_dicts(Wallpaper)
     return {"count": len(rows), "data": rows}

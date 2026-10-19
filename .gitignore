@@ -3,3 +3,8 @@
 __pycache__
 .DS_Store
 directorymap
+
+# apps
+# melodious
+apps/apps/melodious/assets/*
+!apps/apps/melodious/assets/.gitkeep
