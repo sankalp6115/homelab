@@ -1,27 +1,19 @@
 from fastapi import APIRouter, HTTPException
-from database import get_connection
+
+import database.lyrics as db
+from models.lyrics import LyricsResponse
 
 router = APIRouter()
 
-@router.get("")
+
+@router.get("", response_model=list[LyricsResponse])
 def get_all_lyrics():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT song_id, content FROM lyrics")
-    rows = cursor.fetchall()
-    conn.close()
-    return [{"song_id": r["song_id"], "lyrics": r["content"]} for r in rows]
+    return db.list_lyrics()
 
 
-@router.get("/{song_id}")
+@router.get("/{song_id}", response_model=LyricsResponse)
 def get_lyrics(song_id: int):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT song_id, content FROM lyrics WHERE song_id = ?", (song_id,))
-    row = cursor.fetchone()
-    conn.close()
-
-    if not row:
+    lyrics = db.get_lyrics(song_id)
+    if not lyrics:
         raise HTTPException(status_code=404, detail="Lyrics not found for this song")
-
-    return {"song_id": row["song_id"], "lyrics": row["content"]}
+    return lyrics

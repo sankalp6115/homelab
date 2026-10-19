@@ -65,17 +65,17 @@ case "${confirmation,,}" in
         ;;
 esac
 
-if ! python3.11 "$SYNC_SCRIPT"; then
+if ! uv run "$SYNC_SCRIPT"; then
     echo "ERROR: Library sync failed." >&2
     exit 1
 fi
 
 echo "Library sync completed successfully."
 
-if pids=$(pgrep -f 'python3.11 main.py --port 3000'); then
+if pids=$(pgrep -f 'uv run main.py --port 3000'); then
     echo "Stopping process: $pids"
     kill $pids
     sleep 1
 fi
 
-tmux new-session -d -s "melodious" "python3.11 $HOME/homelab/apps/melodious/backend/main.py --port 3000"
+tmux new-session -d -s "melodious" "uv run $HOME/homelab/apps/melodious/backend/main.py --port 3000"
