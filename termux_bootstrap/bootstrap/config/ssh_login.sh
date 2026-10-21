@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/termux-bootstrap"
+CONFIG_ROOT="$HOME/.config/termux-bootstrap"
 AUDIO_FILE="$CONFIG_ROOT/scripts/login.mp3"
 
 if [ -t 0 ] && [ -z "$SSH_ORIGINAL_COMMAND" ]; then

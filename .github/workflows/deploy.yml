@@ -33,7 +33,7 @@ jobs:
 
       - name: Build React frontends and assemble apps
         run: |
-          FRONTEND_APPS=("file_server" "home" "idea_inbox" "keybinder" "melodious" "monitor" "paper_boy" "quote" "yt_downloader")
+          FRONTEND_APPS=("file_server" "home" "idea_inbox" "keybinder" "melodious" "monitor" "paper_boy" "quote" "yt_downloader","macdock")
           
           for app in "${FRONTEND_APPS[@]}"; do
             echo "::group::Building frontend for $app"
