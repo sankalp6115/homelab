@@ -8,3 +8,5 @@ directorymap
 # melodious
 apps/apps/melodious/assets/*
 !apps/apps/melodious/assets/.gitkeep
+
+gatus

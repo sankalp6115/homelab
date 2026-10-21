@@ -1,0 +1,33 @@
+# Ubuntu OpenSSH Server Configuration for Homelab
+# Include drop-in configs
+Include /etc/ssh/sshd_config.d/*.conf
+
+Port 22
+AddressFamily any
+ListenAddress 0.0.0.0
+ListenAddress ::
+
+# Authentication:
+PermitRootLogin prohibit-password
+StrictModes yes
+MaxAuthTries 6
+MaxSessions 10
+
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+
+PasswordAuthentication yes
+PermitEmptyPasswords no
+KbdInteractiveAuthentication no
+
+# Environment & Sessions
+ClientAliveInterval 300
+ClientAliveCountMax 3
+TCPKeepAlive yes
+UsePAM yes
+PrintMotd no
+AcceptEnv LANG LC_*
+
+# SFTP Subsystem
+Subsystem sftp /usr/lib/openssh/sftp-server
+

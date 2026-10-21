@@ -1,0 +1,6 @@
+alias python='python3'
+alias pip='pip3'
+if command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
+    alias bat='batcat'
+fi
+

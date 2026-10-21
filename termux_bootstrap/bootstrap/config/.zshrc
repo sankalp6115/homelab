@@ -4,7 +4,7 @@ eval "$(zoxide init zsh --cmd cd)"
 alias python='python3.11'
 alias pip='pip3.11'
 
-CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/termux-bootstrap"
+CONFIG_ROOT="$HOME/.config/termux-bootstrap"
 
 if [[ -f "$HOME/.aliases" ]]; then
     . "$HOME/.aliases"

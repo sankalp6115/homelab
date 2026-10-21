@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/termux-bootstrap"
+CONFIG_ROOT="$HOME/.config/termux-bootstrap"
 ASCII_ART_FILE="$CONFIG_ROOT/startup/ascii_art.txt"
 
 if [[ -f "$ASCII_ART_FILE" ]]; then
