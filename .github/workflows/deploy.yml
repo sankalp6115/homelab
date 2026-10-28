@@ -33,12 +33,12 @@ jobs:
 
       - name: Build React frontends and assemble apps
         run: |
-          FRONTEND_APPS=("file_server" "home" "idea_inbox" "keybinder" "melodious" "monitor" "paper_boy" "quote" "yt_downloader","macdock")
+          FRONTEND_APPS=("file_server" "home" "idea_inbox" "keybinder" "melodious" "monitor" "paper_boy" "quote" "yt_downloader" "macdock")
           
           for app in "${FRONTEND_APPS[@]}"; do
             echo "::group::Building frontend for $app"
-            if [ -d "source/apps/apps/$app/frontend" ]; then
-              pushd "source/apps/apps/$app/frontend"
+            if [ -d "source/apps/$app/frontend" ]; then
+              pushd "source/apps/$app/frontend"
               npm ci
               npm run build
               popd
@@ -46,7 +46,7 @@ jobs:
             echo "::endgroup::"
           done
 
-          ALL_APPS=("file_server" "home" "idea_inbox" "keybinder" "melodious" "monitor" "no-as-a-service" "paper_boy" "quote" "yt_downloader")
+          ALL_APPS=("file_server" "home" "idea_inbox" "keybinder" "melodious" "monitor" "no-as-a-service" "paper_boy" "quote" "yt_downloader" "macdock")
 
           for app in "${ALL_APPS[@]}"; do
             echo "Assembling $app in deploy repo..."
@@ -63,15 +63,14 @@ jobs:
               --exclude='.pytest_cache' \
               --exclude='.venv' \
               --exclude='venv' \
-              --exclude='.env*' \
               --exclude='.DS_Store' \
               --exclude='Thumbs.db' \
-              "source/apps/apps/$app/" "deploy_repo/apps/$app/"
+              "source/apps/$app/" "deploy_repo/apps/$app/"
 
             # Copy built frontend dist if present
-            if [ -d "source/apps/apps/$app/frontend/dist" ]; then
+            if [ -d "source/apps/$app/frontend/dist" ]; then
               mkdir -p "deploy_repo/apps/$app/frontend/dist"
-              rsync -a "source/apps/apps/$app/frontend/dist/" "deploy_repo/apps/$app/frontend/dist/"
+              rsync -a "source/apps/$app/frontend/dist/" "deploy_repo/apps/$app/frontend/dist/"
             fi
           done
 
@@ -96,7 +95,7 @@ jobs:
 
           # Copy top-level apps files (homelab-env.yaml, requirements.txt, scripts, etc.) excluding raw app sources
           rsync -av \
-            --exclude='apps' \
+            --exclude='*/' \
             --exclude='node_modules' \
             --exclude='__pycache__' \
             --exclude='*.pyc' \

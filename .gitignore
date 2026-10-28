@@ -58,3 +58,7 @@ apps/paper_boy/frontend/assets/audio/*
 
 apps/paper_boy/frontend/assets/overlay/*
 !apps/paper_boy/frontend/assets/overlay/.gitkeep
+
+# docker composes
+docker/data
+docker/docker

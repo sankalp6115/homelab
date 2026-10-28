@@ -1,0 +1,11 @@
+# contains gotify for notification and uptime-kuma for monitoring
+name: homelab
+
+services:
+  gotify:
+    image: gotify/server
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ${CONTAINER_DATA_ROOT:-./data}/gotify:/app/data
