@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 load_dotenv(find_dotenv())
 
 try:
-    from gotify import Gotify
+    from apps.apps.gotify import Gotify
     GOTIFY_TOKEN = os.getenv("GOTIFY_TOKEN")
     GOTIFY_SERVER = os.getenv("GOTIFY_SERVER")
     gotify = Gotify(GOTIFY_SERVER, GOTIFY_TOKEN) if (GOTIFY_SERVER and GOTIFY_TOKEN) else None
@@ -24,12 +24,18 @@ from router import router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Application started")
-    gotify.send("","File server started on 3001")
+    try:
+        gotify.send("","File server started on 3001")
+    except:
+        NotImplementedError("Gotify not found")
 
     yield
 
     print("Application stopped")
-    gotify.send("","File server stopped")
+    try:
+        gotify.send("","File server stopped")
+    except:
+        NotImplementedError("Gotify not found")
 
 app = FastAPI(lifespan=lifespan)
 

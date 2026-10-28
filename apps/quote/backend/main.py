@@ -11,7 +11,7 @@ from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
 try:
-    from gotify import Gotify
+    from apps.apps.gotify import Gotify
     GOTIFY_TOKEN = os.getenv("GOTIFY_TOKEN")
     GOTIFY_SERVER = os.getenv("GOTIFY_SERVER")
     gotify = Gotify(GOTIFY_SERVER, GOTIFY_TOKEN) if (GOTIFY_SERVER and GOTIFY_TOKEN) else None

@@ -17,7 +17,7 @@ from api import songs, playlists, artists, lyrics, debug, wallpaper
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 try:
-    from gotify import Gotify
+    from apps.apps.gotify import Gotify
     GOTIFY_TOKEN = os.getenv("GOTIFY_TOKEN")
     GOTIFY_SERVER = os.getenv("GOTIFY_SERVER")
     gotify = Gotify(GOTIFY_SERVER, GOTIFY_TOKEN) if (GOTIFY_SERVER and GOTIFY_TOKEN) else None
