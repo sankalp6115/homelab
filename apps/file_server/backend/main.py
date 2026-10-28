@@ -24,12 +24,18 @@ from router import router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Application started")
-    gotify.send("","File server started on 3001")
+    try:
+        gotify.send("","File server started on 3001")
+    except:
+        NotImplementedError("Gotify not found")
 
     yield
 
     print("Application stopped")
-    gotify.send("","File server stopped")
+    try:
+        gotify.send("","File server stopped")
+    except:
+        NotImplementedError("Gotify not found")
 
 app = FastAPI(lifespan=lifespan)
 
