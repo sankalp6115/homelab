@@ -63,6 +63,7 @@ jobs:
               --exclude='.pytest_cache' \
               --exclude='.venv' \
               --exclude='venv' \
+              --exclude='.env' \
               --exclude='.DS_Store' \
               --exclude='Thumbs.db' \
               "source/apps/$app/" "deploy_repo/apps/$app/"
@@ -88,7 +89,7 @@ jobs:
             --exclude='.pytest_cache' \
             --exclude='.venv' \
             --exclude='venv' \
-            --exclude='.env*' \
+            --exclude='.env' \
             --exclude='.DS_Store' \
             --exclude='Thumbs.db' \
             source/ deploy_repo/
@@ -101,7 +102,7 @@ jobs:
             --exclude='*.pyc' \
             --exclude='.venv' \
             --exclude='venv' \
-            --exclude='.env*' \
+            --exclude='.env' \
             --exclude='.DS_Store' \
             --exclude='Thumbs.db' \
             source/apps/ deploy_repo/apps/
