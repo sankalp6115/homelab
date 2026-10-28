@@ -13,7 +13,9 @@ dependencies = [
     "fastapi>=0.142.2",
     "pydantic>=2.13.5",
     "python-multipart>=0.0.32",
+    "qrcode>=8.2",
     "requests>=2.34.2",
+    "telethon>=1.45.0",
     "uvicorn>=0.53.0",
 ]
 
@@ -27,4 +29,5 @@ build-backend = "uv_build"
 [tool.uv.workspace]
 members = [
     "apps/apps/melodious/backend",
+    "apps/apps/gotify",
 ]
