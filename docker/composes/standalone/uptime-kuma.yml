@@ -1,0 +1,39 @@
+# =============================================================================
+# Uptime Kuma — uptime & status monitoring
+# Standalone compose file.
+#
+# Usage (from docker/ root):
+#   docker compose -f composes/standalone/uptime-kuma.yml --env-file .env up -d
+# =============================================================================
+
+name: uptime-kuma
+
+services:
+  uptime-kuma:
+    # Docker Hub: https://hub.docker.com/r/louislam/uptime-kuma
+    # Tag '2' tracks the latest v2 release. Pin to a full semver for stability.
+    image: louislam/uptime-kuma:2
+    restart: unless-stopped
+
+    ports:
+      - "${UPTIME_KUMA_PORT:-3001}:3001"
+
+    environment:
+      TZ: ${TZ}
+
+    volumes:
+      - "${DATA_ROOT}/uptime-kuma:/app/data"
+
+    networks:
+      - homelab
+
+    labels:
+      # Stub for future reverse-proxy (Traefik / nginx-proxy) labels.
+      # traefik.enable: "false"
+      homelab.service: "uptime-kuma"
+      homelab.group: "standalone"
+
+networks:
+  homelab:
+    external: true
+

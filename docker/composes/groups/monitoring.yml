@@ -1,0 +1,65 @@
+# =============================================================================
+# Monitoring group — Gotify + Uptime Kuma together
+# Both services share the homelab network and start/stop as a unit.
+#
+# Usage (from docker/ root):
+#   docker compose -f composes/groups/monitoring.yml --env-file .env up -d
+#   docker compose -f composes/groups/monitoring.yml --env-file .env down
+# =============================================================================
+
+name: monitoring
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Gotify — push notification server
+  # ---------------------------------------------------------------------------
+  gotify:
+    # Docker Hub: https://hub.docker.com/r/gotify/server
+    image: gotify/server:latest
+    restart: unless-stopped
+
+    ports:
+      - "${GOTIFY_PORT:-8000}:80"
+
+    environment:
+      TZ: ${TZ}
+
+    volumes:
+      - "${DATA_ROOT}/gotify:/app/data"
+
+    networks:
+      - homelab
+
+    labels:
+      homelab.service: "gotify"
+      homelab.group: "monitoring"
+
+  # ---------------------------------------------------------------------------
+  # Uptime Kuma — uptime & status monitoring
+  # ---------------------------------------------------------------------------
+  uptime-kuma:
+    # Docker Hub: https://hub.docker.com/r/louislam/uptime-kuma
+    image: louislam/uptime-kuma:2
+    restart: unless-stopped
+
+    ports:
+      - "${UPTIME_KUMA_PORT:-3001}:3001"
+
+    environment:
+      TZ: ${TZ}
+
+    volumes:
+      - "${DATA_ROOT}/uptime-kuma:/app/data"
+
+    networks:
+      - homelab
+
+    labels:
+      homelab.service: "uptime-kuma"
+      homelab.group: "monitoring"
+
+networks:
+  homelab:
+    external: true
+
