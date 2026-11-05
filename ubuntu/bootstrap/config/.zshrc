@@ -1,4 +1,4 @@
-# ~/.zshrc - Ubuntu Homelab Environment
+# ~/.zshrc - Homelab Environment
 
 # PATH additions
 export PATH="$HOME/.local/bin:$HOME/system_scripts/control-layer:$PATH"
@@ -13,13 +13,14 @@ if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh --cmd cd)"
 fi
 
+# Aliases
 alias python='python3'
 alias pip='pip3'
 if command -v batcat >/dev/null 2>&1 && ! command -v bat >/dev/null 2>&1; then
     alias bat='batcat'
 fi
 
-CONFIG_ROOT="$HOME/.config/ubuntu-bootstrap"
+CONFIG_ROOT="${HOMELAB_CONFIG_DIR:-$HOME/.config/homelab}"
 
 if [[ -f "$HOME/.aliases" ]]; then
     . "$HOME/.aliases"
@@ -33,36 +34,13 @@ if [[ -o interactive && -n "${SSH_CLIENT:-}" ]]; then
     fi
 fi
 
-# Safe Trash functions
-trash() {
-    local TRASH_DIR="$HOME/.local/trash"
-    mkdir -p "$TRASH_DIR"
-    if [ $# -eq 0 ]; then
-        echo "Usage: trash <file_or_directory>"
-        return 1
-    fi
-    mv -f "$@" "$TRASH_DIR/"
-    echo "Moved to trash: $@"
-}
-
-empty-trash() {
-    local TRASH_DIR="$HOME/.local/trash"
-    if [ -d "$TRASH_DIR" ]; then
-        rm -rf "$TRASH_DIR"/*
-        echo "Trash emptied."
-    else
-        echo "Trash is already empty."
-    fi
-}
-
-alias rm='trash'
-
 # Custom MOTD
 if [[ -o interactive ]]; then
     if [[ -f "$CONFIG_ROOT/scripts/motd.sh" ]]; then
         bash "$CONFIG_ROOT/scripts/motd.sh"
+    elif [[ -f "${PREFIX:-}/etc/motd.sh" ]]; then
+        bash "$PREFIX/etc/motd.sh"
     elif [[ -f "/etc/motd.sh" ]]; then
         bash "/etc/motd.sh"
     fi
 fi
-

@@ -1,6 +1,6 @@
 # Ubuntu Homelab Environment
 
-This directory contains the complete port of **termux_bootstrap** and **termux_scripting** tailored specifically for **Ubuntu Linux** systems (such as Ubuntu Server, Ubuntu Desktop, Intel NUCs, Raspberry Pi running Ubuntu, or cloud VMs).
+This directory contains the port of the homelab environment tailored specifically for **Ubuntu Linux** systems (such as Ubuntu Server, Ubuntu Desktop, Intel NUCs, Raspberry Pi running Ubuntu, WSL, or cloud VMs).
 
 ---
 
@@ -8,7 +8,7 @@ This directory contains the complete port of **termux_bootstrap** and **termux_s
 
 ```text
 ubuntu/
-├── bootstrap/               # System bootstrap (packages, SSH, shell configs, startup motd)
+├── bootstrap/               # System bootstrap (packages, SSH, shell configs, login motd)
 │   ├── bootstrap.sh         # Main entry point to run bootstrap sequence
 │   ├── 01-system.sh         # System updates & OS check
 │   ├── 02-packages.sh       # APT packages, starship, zoxide, fastfetch, bat
@@ -18,15 +18,18 @@ ubuntu/
 │   ├── 06-services.sh       # Systemd service configuration (ssh, cron)
 │   ├── 07-env.sh            # Creates .env secrets file
 │   ├── 08-opt-packages.sh   # Python, uv, rclone installation
-│   ├── config/              # Shell, tmux, SSH configs & startup scripts
+│   ├── config/              # Shell, tmux, SSH configs & startup banners
 │   └── README.md
 │
-├── scripting/               # Homelab control layer & utilities
+├── control-layer/           # Homelab control layer CLI & subcommands
 │   ├── orchestrator.sh      # Installs CLI into ~/system_scripts/control-layer & PATH
-│   ├── control-layer/       # All homelab subcommands (status, app-up, wifi, etc.)
-│   ├── github-backup/       # GitHub repository backup tool
-│   ├── Tasks.md
-│   └── README.md
+│   ├── homelab.sh           # Main unified CLI
+│   ├── app-port-map.ini     # App-to-port mapping registry
+│   └── *.sh                 # Commands: status, app-*, battery, wifi, storage, ports, etc.
+│
+├── github-backup/           # GitHub repository backup tool
+│   ├── github-backup.py
+│   └── .env.example
 │
 └── README.md
 ```
@@ -37,7 +40,7 @@ ubuntu/
 
 1. **Package Management**:
    - Replaced `pkg install` with `apt install`.
-   - Mapped packages to Debian/Ubuntu equivalents (e.g. `openssh-server`, `openssh-client`, `cron`, `net-tools`, `batcat`).
+   - Mapped packages to Debian/Ubuntu equivalents (`openssh-server`, `openssh-client`, `cron`, `net-tools`, `batcat`).
    - Integrated official installers for `starship`, `zoxide`, and Astral `uv`.
    - Handled Ubuntu `bat` naming (`batcat` symlinked to `bat`).
 
@@ -56,12 +59,11 @@ ubuntu/
    - Replaced Android `/data` mountpoint checks with root `/` partition.
 
 6. **Audio & Notifications**:
-   - Termux audio playback (`termux-media-player`) was safely dropped as specified.
-   - Termux notifications were ported to Linux `notify-send` (if desktop/DBUS session is active) plus persistent logging to `$HOME/logs/ssh_login.log`.
+   - Desktop notifications via `notify-send` (if desktop/DBUS session is active) plus persistent logging to `$HOME/logs/ssh_login.log`.
 
 7. **Paths & Portability**:
-   - Removed Termux `$PREFIX` paths (`/data/data/com.termux/...`), replacing them with standard Linux FHS paths (`/etc`, `/usr/bin`, `~/.local/bin`, `~/.config`).
-   - Fixed Windows/Termux hardcoded paths in `github-backup.py`.
+   - Removed Termux `$PREFIX` paths, replacing them with standard Linux FHS paths (`/etc`, `/usr/bin`, `~/.local/bin`, `~/.config`).
+   - Unified config root to `~/.config/homelab`.
 
 ---
 
@@ -75,7 +77,7 @@ bash bootstrap.sh
 
 ### 2. Install the Homelab Control Layer
 ```bash
-cd ubuntu/scripting
+cd ubuntu/control-layer
 bash orchestrator.sh
 source ~/.bashrc   # or source ~/.zshrc
 ```
@@ -86,4 +88,3 @@ homelab status
 homelab app-list
 homelab app-up melodious
 ```
-

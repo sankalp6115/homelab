@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
     echo ""
     echo "Usage: homelab ports"
     echo ""
-    echo "Lists ports used by running Python processes."
-    echo "Finds all python processes with --port <N> in their args."
+    echo "Lists ports currently in use by Python processes:"
+    echo "  · Looks for '--port <N>' in process command lines"
+    echo "  · Resolves the app name from the script path"
     echo ""
     exit 0
 fi
@@ -21,9 +22,8 @@ else
         if [[ -n "$app" ]]; then
             printf "  %-8s %s\n" "$port" "$app"
         else
-            printf "  %-8s %s\n" "$port" "(unknown)"
+            printf "  %-8s %s\n" "$port" "unknown"
         fi
     done <<< "$PORTS"
     echo ""
 fi
-

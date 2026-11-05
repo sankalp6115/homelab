@@ -2,6 +2,9 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT_MAP="$SCRIPT_DIR/app-port-map.ini"
+if [[ ! -f "$PORT_MAP" && -f "$HOME/system_scripts/control-layer/app-port-map.ini" ]]; then
+    PORT_MAP="$HOME/system_scripts/control-layer/app-port-map.ini"
+fi
 
 # ─── Help ─────────────────────────────────────────────────────────────────────
 
@@ -11,7 +14,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
     echo ""
     echo "Attaches to the tmux session for a running homelab app."
     echo "  · Session name matches the app name (e.g. 'melodious')"
-    echo "  · If no tmux session found, falls back to showing recent ps output"
+    echo "  · If no tmux session found, falls back to showing process info"
     echo "  · Detach from tmux with: Ctrl+B then D (or Ctrl+A then D with custom tmux.conf)"
     echo ""
     echo "Example:"
@@ -22,10 +25,15 @@ fi
 
 # ─── Args ─────────────────────────────────────────────────────────────────────
 
-APP_NAME="$1"
+APP_NAME="${1:-}"
 
 if [[ -z "$APP_NAME" ]]; then
     echo "Usage: homelab app-logs <app-name>"
+    exit 1
+fi
+
+if [[ ! -f "$PORT_MAP" ]]; then
+    echo "Error: app-port-map.ini not found at $PORT_MAP"
     exit 1
 fi
 
@@ -42,7 +50,7 @@ fi
 
 if command -v tmux &>/dev/null; then
     if tmux has-session -t "$APP_NAME" 2>/dev/null; then
-        echo "Attaching to tmux session '$APP_NAME'  (Ctrl+B D to detach)"
+        echo "Attaching to tmux session '$APP_NAME'  (Ctrl+B D or Ctrl+A D to detach)"
         echo ""
         tmux attach-session -t "$APP_NAME"
         exit 0
@@ -52,13 +60,13 @@ if command -v tmux &>/dev/null; then
     fi
 fi
 
-# ─── Fallback: show ps output for the process ────────────────────────────────
+# ─── Fallback: show process info ─────────────────────────────────────────────
 
 echo "Falling back to process info for $APP_NAME (port $PORT):"
 echo ""
 
 if command -v pgrep &>/dev/null; then
-    pids="$(pgrep -f "main.py --port $PORT")"
+    pids="$(pgrep -f "main.py --port $PORT" 2>/dev/null || true)"
 else
     pids="$(ps aux | grep "main.py --port $PORT" | grep -v grep | awk '{print $2}')"
 fi
@@ -69,4 +77,3 @@ else
     echo "  $APP_NAME does not appear to be running."
 fi
 echo ""
-

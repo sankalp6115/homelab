@@ -2,6 +2,9 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT_MAP="$SCRIPT_DIR/app-port-map.ini"
+if [[ ! -f "$PORT_MAP" && -f "$HOME/system_scripts/control-layer/app-port-map.ini" ]]; then
+    PORT_MAP="$HOME/system_scripts/control-layer/app-port-map.ini"
+fi
 
 # ─── Help ─────────────────────────────────────────────────────────────────────
 
@@ -14,6 +17,11 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
     echo "  · Shows app name and port for each entry"
     echo ""
     exit 0
+fi
+
+if [[ ! -f "$PORT_MAP" ]]; then
+    echo "Error: app-port-map.ini not found at $PORT_MAP"
+    exit 1
 fi
 
 # ─── Colours ──────────────────────────────────────────────────────────────────
@@ -45,7 +53,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
 
     # Check if running
     if command -v pgrep &>/dev/null; then
-        pids="$(pgrep -f "main.py --port $PORT" 2>/dev/null)"
+        pids="$(pgrep -f "main.py --port $PORT" 2>/dev/null || true)"
     else
         pids="$(ps aux | grep "main.py --port $PORT" | grep -v grep | awk '{print $2}')"
     fi
@@ -61,4 +69,3 @@ while IFS= read -r line || [[ -n "$line" ]]; do
 done < "$PORT_MAP"
 
 echo ""
-

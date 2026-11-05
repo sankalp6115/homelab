@@ -1,34 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_ROOT="$HOME/.config/ubuntu-bootstrap"
+CONFIG_ROOT="${HOMELAB_CONFIG_DIR:-$HOME/.config/homelab}"
 ASCII_ART_FILE="$CONFIG_ROOT/startup/ascii_art.txt"
 
 if [[ -f "$ASCII_ART_FILE" ]]; then
     cat "$ASCII_ART_FILE"
-else
-    echo "ASCII art unavailable"
+    echo
 fi
 
-echo
-echo
-
-run_script() {
-    local script_path="$1"
-    if [[ -f "$script_path" ]]; then
-        bash "$script_path" 2>/dev/null || true
-    else
-        echo "Unavailable"
+# Run control layer commands (battery, wifi, storage)
+run_control() {
+    local cmd="$1"
+    if command -v homelab >/dev/null 2>&1; then
+        homelab "$cmd" 2>/dev/null || true
+    elif [[ -x "$HOME/system_scripts/control-layer/homelab-$cmd" ]]; then
+        "$HOME/system_scripts/control-layer/homelab-$cmd" 2>/dev/null || true
+    elif [[ -x "$HOME/system_scripts/control-layer/homelab" ]]; then
+        "$HOME/system_scripts/control-layer/homelab" "$cmd" 2>/dev/null || true
     fi
 }
 
-echo "$(run_script "$CONFIG_ROOT/startup/battery.sh")"
+run_control battery
 echo
-echo "$(run_script "$CONFIG_ROOT/startup/interface.sh")"
+run_control wifi
 echo
-echo "$(run_script "$CONFIG_ROOT/startup/storage_management.sh")"
-# echo
-# echo "$(run_script "$CONFIG_ROOT/startup/weather.sh")"
+run_control storage
 echo
-echo "$(date)"
-
+date

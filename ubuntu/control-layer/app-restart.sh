@@ -2,6 +2,9 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT_MAP="$SCRIPT_DIR/app-port-map.ini"
+if [[ ! -f "$PORT_MAP" && -f "$HOME/system_scripts/control-layer/app-port-map.ini" ]]; then
+    PORT_MAP="$HOME/system_scripts/control-layer/app-port-map.ini"
+fi
 
 # ─── Help ─────────────────────────────────────────────────────────────────────
 
@@ -22,10 +25,15 @@ fi
 
 # ─── Args ─────────────────────────────────────────────────────────────────────
 
-APP_NAME="$1"
+APP_NAME="${1:-}"
 
 if [[ -z "$APP_NAME" ]]; then
     echo "Usage: homelab app-restart <app-name>"
+    exit 1
+fi
+
+if [[ ! -f "$PORT_MAP" ]]; then
+    echo "Error: app-port-map.ini not found at $PORT_MAP"
     exit 1
 fi
 
@@ -38,26 +46,42 @@ if [[ -z "$PORT" ]]; then
     exit 1
 fi
 
-HOMELAB_DIR="$HOME/homelab/apps"
+HOMELAB_DIR="${HOMELAB_DIR:-}"
+if [[ -z "$HOMELAB_DIR" || ! -d "$HOMELAB_DIR/apps" ]]; then
+    GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+    if [[ -n "$GIT_ROOT" && -d "$GIT_ROOT/apps" ]]; then
+        HOMELAB_DIR="$GIT_ROOT"
+    elif [[ -d "$HOME/homelab/apps" ]]; then
+        HOMELAB_DIR="$HOME/homelab"
+    fi
+fi
+
 START_SCRIPT=""
-if [[ -f "$HOMELAB_DIR/$APP_NAME/start.sh" ]]; then
-    START_SCRIPT="$HOMELAB_DIR/$APP_NAME/start.sh"
-elif [[ -f "$HOMELAB_DIR/apps/$APP_NAME/start.sh" ]]; then
-    START_SCRIPT="$HOMELAB_DIR/apps/$APP_NAME/start.sh"
+if [[ -n "$HOMELAB_DIR" ]]; then
+    if [[ -f "$HOMELAB_DIR/apps/$APP_NAME/start.sh" ]]; then
+        START_SCRIPT="$HOMELAB_DIR/apps/$APP_NAME/start.sh"
+    elif [[ -f "$HOMELAB_DIR/$APP_NAME/start.sh" ]]; then
+        START_SCRIPT="$HOMELAB_DIR/$APP_NAME/start.sh"
+    fi
 fi
 
 # ─── Stop ─────────────────────────────────────────────────────────────────────
 
 if command -v pgrep &>/dev/null; then
-    pids="$(pgrep -f "main.py --port $PORT")"
+    pids="$(pgrep -f "main.py --port $PORT" 2>/dev/null || true)"
 else
     pids="$(ps aux | grep "main.py --port $PORT" | grep -v grep | awk '{print $2}')"
 fi
 
 if [[ -n "$pids" ]]; then
     echo "Stopping $APP_NAME (PIDs: $pids)..."
-    kill $pids
+    kill $pids 2>/dev/null || true
     sleep 1
+    for pid in $pids; do
+        if kill -0 "$pid" 2>/dev/null; then
+            kill -9 "$pid" 2>/dev/null || true
+        fi
+    done
     echo "$APP_NAME stopped."
 else
     echo "$APP_NAME was not running, starting fresh."
@@ -70,10 +94,9 @@ fi
 # ─── Start ────────────────────────────────────────────────────────────────────
 
 if [[ -z "$START_SCRIPT" ]]; then
-    echo "No start.sh found for $APP_NAME at $HOMELAB_DIR/$APP_NAME/start.sh"
+    echo "No start.sh found for $APP_NAME (searched $HOMELAB_DIR/apps/$APP_NAME/start.sh)"
     exit 1
 fi
 
 echo "Starting $APP_NAME (port $PORT)..."
 bash "$START_SCRIPT"
-

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 echo "Enabling and starting Ubuntu services..."
 
@@ -11,7 +11,7 @@ fi
 
 # Enable and start SSH service
 SSH_SVC="ssh"
-if systemctl list-unit-files | grep -q "^sshd.service"; then
+if systemctl list-unit-files 2>/dev/null | grep -q "^sshd.service"; then
     SSH_SVC="sshd"
 fi
 
@@ -24,11 +24,10 @@ $SUDO systemctl start cron 2>/dev/null || true
 
 # Health check
 sleep 1
-if systemctl is-active --quiet "$SSH_SVC" || pgrep -x "sshd" >/dev/null 2>&1; then
+if systemctl is-active --quiet "$SSH_SVC" 2>/dev/null || pgrep -x "sshd" >/dev/null 2>&1; then
     echo "SSH ✓"
 else
     echo "SSH ✗"
 fi
 
 echo "Services health check complete."
-

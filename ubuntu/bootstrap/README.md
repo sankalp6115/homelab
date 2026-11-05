@@ -11,7 +11,7 @@ This directory replicates and ports the bootstrap automation from Termux to Ubun
 - Configures SSH server access and enables systemd `ssh` service
 - Sets up standard project folders (`~/archives`, `~/backups`, `~/logs`, `~/media`, `~/.local/bin`)
 - Deploys shell configurations (`.zshrc`, `.bashrc`, `.tmux.conf`, `.nanorc`, `.aliases`)
-- Deploys startup and login hooks (`ssh_login.sh`, `motd.sh`, `interface.sh`, `storage_management.sh`, `battery.sh`, `weather.sh`)
+- Deploys login and MOTD hooks (`ssh_login.sh`, `motd.sh`, ASCII banner) that integrate with the `homelab` control layer
 - Prepares Python 3 development environment, `rclone`, and `uv`
 
 ## Quick start

@@ -2,9 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_ROOT="$HOME/.config/ubuntu-bootstrap"
+CONFIG_ROOT="${HOMELAB_CONFIG_DIR:-$HOME/.config/homelab}"
 
-echo "Setting up configurations..."
+echo "Setting up configurations for Ubuntu..."
 
 mkdir -p "$CONFIG_ROOT/scripts" "$CONFIG_ROOT/startup" "$CONFIG_ROOT/secrets"
 
@@ -19,11 +19,6 @@ cp -f "$SCRIPT_DIR/config/motd.sh" "$CONFIG_ROOT/scripts/motd.sh" 2>/dev/null ||
 chmod +x "$CONFIG_ROOT/scripts/"*.sh 2>/dev/null || true
 
 cp -f "$SCRIPT_DIR/config/startup/ascii_art.txt" "$CONFIG_ROOT/startup/ascii_art.txt" 2>/dev/null || echo "Warning: ascii_art not found"
-cp -f "$SCRIPT_DIR/config/startup/battery.sh" "$CONFIG_ROOT/startup/battery.sh" 2>/dev/null || echo "Warning: battery.sh not found"
-cp -f "$SCRIPT_DIR/config/startup/interface.sh" "$CONFIG_ROOT/startup/interface.sh" 2>/dev/null || echo "Warning: interface.sh not found"
-cp -f "$SCRIPT_DIR/config/startup/storage_management.sh" "$CONFIG_ROOT/startup/storage_management.sh" 2>/dev/null || echo "Warning: storage_management.sh not found"
-cp -f "$SCRIPT_DIR/config/startup/weather.sh" "$CONFIG_ROOT/startup/weather.sh" 2>/dev/null || echo "Warning: weather.sh not found"
-chmod +x "$CONFIG_ROOT/startup/"*.sh 2>/dev/null || true
 
 # SSH server configuration
 if command -v sudo >/dev/null 2>&1; then
@@ -38,7 +33,7 @@ fi
 # Changing shell to zsh
 if command -v zsh >/dev/null 2>&1; then
     ZSH_PATH="$(which zsh)"
-    if [[ "$SHELL" != "$ZSH_PATH" ]]; then
+    if [[ "${SHELL:-}" != "$ZSH_PATH" ]]; then
         echo "Changing default shell to zsh ($ZSH_PATH)..."
         chsh -s "$ZSH_PATH" "$USER" 2>/dev/null || echo "Note: Run 'chsh -s $(which zsh)' manually if password prompt is needed."
     else
@@ -47,4 +42,3 @@ if command -v zsh >/dev/null 2>&1; then
 fi
 
 echo "Configuration files deployed."
-

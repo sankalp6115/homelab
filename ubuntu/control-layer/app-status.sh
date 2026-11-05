@@ -2,6 +2,9 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT_MAP="$SCRIPT_DIR/app-port-map.ini"
+if [[ ! -f "$PORT_MAP" && -f "$HOME/system_scripts/control-layer/app-port-map.ini" ]]; then
+    PORT_MAP="$HOME/system_scripts/control-layer/app-port-map.ini"
+fi
 
 # ─── Help ─────────────────────────────────────────────────────────────────────
 
@@ -21,10 +24,15 @@ fi
 
 # ─── Args ─────────────────────────────────────────────────────────────────────
 
-APP_NAME="$1"
+APP_NAME="${1:-}"
 
 if [[ -z "$APP_NAME" ]]; then
     echo "Usage: homelab app-status <app-name>"
+    exit 1
+fi
+
+if [[ ! -f "$PORT_MAP" ]]; then
+    echo "Error: app-port-map.ini not found at $PORT_MAP"
     exit 1
 fi
 
@@ -46,7 +54,7 @@ DIM="\033[2m"
 RESET="\033[0m"
 
 if command -v pgrep &>/dev/null; then
-    pids="$(pgrep -f "main.py --port $PORT")"
+    pids="$(pgrep -f "main.py --port $PORT" 2>/dev/null || true)"
 else
     pids="$(ps aux | grep "main.py --port $PORT" | grep -v grep | awk '{print $2}')"
 fi
@@ -61,4 +69,3 @@ else
     echo -e "  ${DIM}Port:${RESET} $PORT (not listening)"
 fi
 echo ""
-

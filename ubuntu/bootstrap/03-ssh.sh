@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 echo "=== SSH Configuration ==="
-echo "Configuring SSH authentication for user: $USER"
+USER_NAME="$(whoami 2>/dev/null || echo "${USER:-ubuntu}")"
+echo "Configuring SSH authentication for user: $USER_NAME"
 
-read -p "Would you like to change/set your user password for SSH login? [y/N]: " change_pass
+read -p "Would you like to change/set your user password for SSH login? [y/N]: " change_pass || true
+change_pass="${change_pass:-n}"
 if [[ "${change_pass,,}" == "y" || "${change_pass,,}" == "yes" ]]; then
     passwd
 else
@@ -18,4 +20,3 @@ touch "$HOME/.ssh/authorized_keys"
 chmod 600 "$HOME/.ssh/authorized_keys"
 
 echo "SSH user environment prepared."
-

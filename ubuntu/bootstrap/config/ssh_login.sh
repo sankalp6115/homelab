@@ -20,4 +20,3 @@ if [ -t 0 ] && [ -z "${SSH_ORIGINAL_COMMAND:-}" ]; then
             "$client_port" >> "$HOME/logs/ssh_login.log"
     fi
 fi
-
