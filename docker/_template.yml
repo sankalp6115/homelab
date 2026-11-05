@@ -1,0 +1,109 @@
+# =============================================================================
+# _template.yml — Copy-paste template for adding a new service
+#
+# HOW TO USE:
+#   1. Copy this file to composes/standalone/<app-name>.yml
+#      (or composes/groups/<group-name>.yml for grouped services)
+#   2. Replace every TODO with real values.
+#   3. Add any new env vars to .env and .env.example.
+#   4. Run: docker compose -f composes/standalone/<app-name>.yml \
+#             --env-file .env up -d
+# =============================================================================
+
+# TODO: Set the compose project name. Use the app name for standalone files,
+#       or the group name for group files. Must be unique across all composes.
+name: TODO_APP_NAME
+
+services:
+
+  # ===========================================================================
+  # PRIMARY SERVICE
+  # ===========================================================================
+  # TODO: Rename this key to match the service (e.g. "myapp").
+  #       Do NOT use `container_name` — let Docker auto-name containers.
+  my-service:
+
+    # TODO: Replace with a real image and tag.
+    # Using 'latest' is acceptable for homelab but pin to a semver for stability.
+    # e.g. image: myapp/myapp:1.2.3
+    image: TODO_IMAGE:latest
+
+    # Always keep this — restarts the container on failure or reboot.
+    restart: unless-stopped
+
+    ports:
+      # Format: "HOST_PORT:CONTAINER_PORT"
+      # TODO: Use an env var for the host port so it's centralised in .env
+      - "${TODO_APP_PORT:-8080}:8080"
+
+    environment:
+      # Always include TZ
+      TZ: ${TZ}
+      # TODO: Add any other environment variables the app needs, e.g.:
+      # APP_SECRET: ${TODO_APP_SECRET}
+      # APP_DB_URL: ${TODO_APP_DB_URL}
+
+    volumes:
+      # Bind-mount under DATA_ROOT for easy backup.
+      # TODO: Replace 'my-service' and '/data' with the real service name
+      #       and the container's data path.
+      - "${DATA_ROOT}/my-service:/data"
+
+    networks:
+      - homelab
+
+    labels:
+      # Stub for future reverse-proxy (Traefik / nginx-proxy) integration.
+      # Uncomment and configure when you add a proxy.
+      # traefik.enable: "true"
+      # traefik.http.routers.my-service.rule: "Host(`my-service.home`)"
+      # traefik.http.services.my-service.loadbalancer.server.port: "8080"
+      homelab.service: "TODO_APP_NAME"       # TODO: fill in
+      homelab.group: "standalone"            # TODO: or "my-group"
+
+  # ===========================================================================
+  # OPTIONAL: SIDECAR / DEPENDENCY SERVICE
+  # e.g. a database, a reverse proxy, a background worker
+  # ===========================================================================
+  # Uncomment and fill in if your app needs a companion container.
+  #
+  # my-sidecar:
+  #   image: TODO_SIDECAR_IMAGE:latest
+  #   restart: unless-stopped
+  #
+  #   environment:
+  #     TZ: ${TZ}
+  #     # TODO: Add sidecar-specific vars
+  #
+  #   volumes:
+  #     - "${DATA_ROOT}/my-service-sidecar:/var/lib/data"
+  #
+  #   networks:
+  #     - homelab
+  #
+  #   labels:
+  #     homelab.service: "TODO_SIDECAR_NAME"
+  #     homelab.group: "standalone"
+  #
+  # If the primary service depends on the sidecar being healthy first,
+  # add this block to the primary service:
+  #
+  #   depends_on:
+  #     my-sidecar:
+  #       condition: service_healthy
+  #
+  # And add a healthcheck to the sidecar:
+  #
+  #   healthcheck:
+  #     test: ["CMD", "TODO_HEALTH_CMD"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+# =============================================================================
+# NETWORKS — always reference homelab as external
+# =============================================================================
+networks:
+  homelab:
+    external: true
+

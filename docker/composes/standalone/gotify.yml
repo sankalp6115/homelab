@@ -1,0 +1,41 @@
+# =============================================================================
+# Gotify — push notification server
+# Standalone compose file.
+#
+# Usage (from docker/ root):
+#   docker compose -f composes/standalone/gotify.yml --env-file .env up -d
+# =============================================================================
+
+name: gotify
+
+services:
+  gotify:
+    # Docker Hub: https://hub.docker.com/r/gotify/server
+    # Pinning to 'latest' is acceptable for homelab; replace with a version tag
+    # (e.g. 2.5.0) for stability.
+    image: gotify/server:latest
+    restart: unless-stopped
+
+    ports:
+      - "${GOTIFY_PORT:-8000}:80"
+
+    environment:
+      TZ: ${TZ}
+
+    volumes:
+      - "${DATA_ROOT}/gotify:/app/data"
+
+    networks:
+      - homelab
+
+    labels:
+      # Stub for future reverse-proxy (Traefik / nginx-proxy) labels.
+      # Uncomment and fill in when you add a proxy.
+      # traefik.enable: "false"
+      homelab.service: "gotify"
+      homelab.group: "standalone"
+
+networks:
+  homelab:
+    external: true
+
