@@ -1,12 +1,13 @@
-# homelab_scripting
+# Termux Homelab Environment
 
-A collection of shell scripts for managing a self-hosted homelab running on **Termux** (Android). Provides a unified `homelab` CLI to monitor system health, manage Python-based apps, sync music, and back up GitHub repositories — all from the terminal.
+A collection of bootstrap automation and control layer shell scripts for managing a self-hosted homelab running on **Termux** (Android). Provides a unified `homelab` CLI to monitor system health, manage Python-based apps, sync music, and back up GitHub repositories — all from the terminal.
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Directory Structure](#directory-structure)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [CLI Reference](#cli-reference)
@@ -15,8 +16,40 @@ A collection of shell scripts for managing a self-hosted homelab running on **Te
   - [Utilities](#utilities)
 - [App Port Map](#app-port-map)
 - [GitHub Backup](#github-backup)
-- [Project Structure](#project-structure)
 - [Extending](#extending)
+
+---
+
+## Directory Structure
+
+```text
+termux/
+├── bootstrap/               # System bootstrap (packages, SSH, shell configs, login motd)
+│   ├── bootstrap.sh         # Main entry point to run bootstrap sequence
+│   ├── 01-system.sh         # System updates & storage setup
+│   ├── 02-packages.sh       # Essential Termux packages
+│   ├── 03-ssh.sh            # SSH server user setup
+│   ├── 04-directories.sh    # Directory structure initialization
+│   ├── 05-config.sh         # Copies configs (.zshrc, .bashrc, .tmux.conf, motd)
+│   ├── 06-services.sh       # Termux services configuration (sshd)
+│   ├── 07-env.sh            # Creates .env secrets file
+│   ├── 08-opt-packages.sh   # Python, uv, rclone installation
+│   ├── config/              # Shell, tmux, SSH configs & startup banners
+│   └── README.md
+│
+├── control-layer/           # Homelab control layer CLI & subcommands
+│   ├── orchestrator.sh      # Installs CLI into ~/system_scripts/control-layer & PATH
+│   ├── homelab.sh           # Main unified CLI
+│   ├── app-port-map.ini     # App-to-port mapping registry
+│   └── *.sh                 # Commands: status, app-*, battery, wifi, storage, ports, etc.
+│
+├── github-backup/           # GitHub repository backup tool
+│   ├── github-backup.py
+│   └── .env.example
+│
+├── Tasks.md
+└── README.md
+```
 
 ---
 
@@ -44,7 +77,7 @@ All commands are available globally after running `orchestrator.sh` once. The sc
 | `jq` | JSON parsing for termux-api output |
 | `tmux` | App process management (apps run in named sessions) |
 | `rclone` | Music sync from remote storage |
-| `python3.11` | Running homelab apps |
+| `python` / `uv` | Running homelab apps |
 | `git` | Repo update command |
 
 Install on Termux:
@@ -56,13 +89,12 @@ pkg install termux-api jq tmux rclone git python
 
 ## Installation
 
-Clone the repo anywhere and run the orchestrator once:
+Run the orchestrator once:
 
 ```bash
-git clone https://github.com/sankalp6115/homelab_scripting.git
-cd homelab_scripting
+cd termux/control-layer
 bash orchestrator.sh
-source ~/.bashrc
+source ~/.bashrc   # or source ~/.zshrc
 ```
 
 What `orchestrator.sh` does:
@@ -298,29 +330,7 @@ python3 github-backup.py
 
 ## Project Structure
 
-```
-homelab_scripting/
-├── orchestrator.sh              # Install script — run this to set everything up
-├── github-backup/
-│   ├── github-backup.py         # GitHub mirror backup script
-│   └── .env                     # GitHub PAT (never commit this)
-└── control-layer/
-    ├── homelab.sh               # Root CLI dispatcher
-    ├── app-port-map.ini         # App name → port registry
-    ├── status.sh                # Full system dashboard
-    ├── battery.sh               # Battery detail
-    ├── wifi.sh                  # WiFi info
-    ├── storage.sh               # Disk usage
-    ├── ports.sh                 # Active Python app ports
-    ├── app-list.sh              # All apps with live status
-    ├── app-status.sh            # Status of a single app
-    ├── app-up.sh                # Start an app
-    ├── app-down.sh              # Stop an app
-    ├── app-restart.sh           # Restart an app
-    ├── app-logs.sh              # Attach to app tmux session
-    ├── music-sync.sh            # Sync music and restart melodious
-    └── update.sh                # Pull homelab repo updates
-```
+See the [Directory Structure](#directory-structure) section above.
 
 ---
 

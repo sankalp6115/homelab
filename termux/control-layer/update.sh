@@ -10,16 +10,21 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 # Resolve homelab directory
-HOMELAB_DIR="${HOMELAB_DIR:-$HOME/homelab}"
+HOMELAB_DIR="${HOMELAB_DIR:-}"
 
-if [[ ! -d "$HOMELAB_DIR/.git" ]]; then
-    if [[ -d "./.git" ]]; then
+if [[ -z "$HOMELAB_DIR" || ! -d "$HOMELAB_DIR/.git" ]]; then
+    GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+    if [[ -n "$GIT_ROOT" && -d "$GIT_ROOT/.git" ]]; then
+        HOMELAB_DIR="$GIT_ROOT"
+    elif [[ -d "$HOME/homelab/.git" ]]; then
+        HOMELAB_DIR="$HOME/homelab"
+    elif [[ -d "./.git" ]]; then
         HOMELAB_DIR="$(pwd)"
     fi
 fi
 
-if [[ ! -d "$HOMELAB_DIR/.git" ]]; then
-    echo "Error: Homelab git repository not found at $HOMELAB_DIR"
+if [[ -z "$HOMELAB_DIR" || ! -d "$HOMELAB_DIR/.git" ]]; then
+    echo "Error: Homelab git repository not found."
     exit 1
 fi
 

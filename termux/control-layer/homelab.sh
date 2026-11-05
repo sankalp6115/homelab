@@ -53,7 +53,20 @@ case "$subcommand" in
         ;;
     status|battery|wifi|storage|ports|app-up|app-down|app-restart|app-status|app-list|app-logs|music-sync|update)
         shift
-        exec "$SCRIPT_DIR/homelab-$subcommand" "$@"
+        if [[ -x "$SCRIPT_DIR/homelab-$subcommand" ]]; then
+            exec "$SCRIPT_DIR/homelab-$subcommand" "$@"
+        elif [[ -f "$SCRIPT_DIR/homelab-$subcommand" ]]; then
+            exec bash "$SCRIPT_DIR/homelab-$subcommand" "$@"
+        elif [[ -x "$SCRIPT_DIR/$subcommand.sh" ]]; then
+            exec "$SCRIPT_DIR/$subcommand.sh" "$@"
+        elif [[ -f "$SCRIPT_DIR/$subcommand.sh" ]]; then
+            exec bash "$SCRIPT_DIR/$subcommand.sh" "$@"
+        elif [[ -x "$SCRIPT_DIR/$subcommand" ]]; then
+            exec "$SCRIPT_DIR/$subcommand" "$@"
+        else
+            echo "Error: Command handler not found for '$subcommand'"
+            exit 1
+        fi
         ;;
     *)
         echo -e "${BOLD}homelab:${RESET} unknown subcommand '${subcommand}'"

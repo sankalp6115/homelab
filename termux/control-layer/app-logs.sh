@@ -2,6 +2,9 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT_MAP="$SCRIPT_DIR/app-port-map.ini"
+if [[ ! -f "$PORT_MAP" && -f "$HOME/system_scripts/control-layer/app-port-map.ini" ]]; then
+    PORT_MAP="$HOME/system_scripts/control-layer/app-port-map.ini"
+fi
 
 # ─── Help ─────────────────────────────────────────────────────────────────────
 

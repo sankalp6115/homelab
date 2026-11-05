@@ -2,6 +2,9 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT_MAP="$SCRIPT_DIR/app-port-map.ini"
+if [[ ! -f "$PORT_MAP" && -f "$HOME/system_scripts/control-layer/app-port-map.ini" ]]; then
+    PORT_MAP="$HOME/system_scripts/control-layer/app-port-map.ini"
+fi
 
 # ─── Help ─────────────────────────────────────────────────────────────────────
 
@@ -43,12 +46,23 @@ if [[ -z "$PORT" ]]; then
     exit 1
 fi
 
-HOMELAB_DIR="${HOMELAB_DIR:-$HOME/homelab}"
+HOMELAB_DIR="${HOMELAB_DIR:-}"
+if [[ -z "$HOMELAB_DIR" || ! -d "$HOMELAB_DIR/apps" ]]; then
+    GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+    if [[ -n "$GIT_ROOT" && -d "$GIT_ROOT/apps" ]]; then
+        HOMELAB_DIR="$GIT_ROOT"
+    elif [[ -d "$HOME/homelab/apps" ]]; then
+        HOMELAB_DIR="$HOME/homelab"
+    fi
+fi
+
 START_SCRIPT=""
-if [[ -f "$HOMELAB_DIR/apps/$APP_NAME/start.sh" ]]; then
-    START_SCRIPT="$HOMELAB_DIR/apps/$APP_NAME/start.sh"
-elif [[ -f "$HOMELAB_DIR/$APP_NAME/start.sh" ]]; then
-    START_SCRIPT="$HOMELAB_DIR/$APP_NAME/start.sh"
+if [[ -n "$HOMELAB_DIR" ]]; then
+    if [[ -f "$HOMELAB_DIR/apps/$APP_NAME/start.sh" ]]; then
+        START_SCRIPT="$HOMELAB_DIR/apps/$APP_NAME/start.sh"
+    elif [[ -f "$HOMELAB_DIR/$APP_NAME/start.sh" ]]; then
+        START_SCRIPT="$HOMELAB_DIR/$APP_NAME/start.sh"
+    fi
 fi
 
 # ─── Stop ─────────────────────────────────────────────────────────────────────

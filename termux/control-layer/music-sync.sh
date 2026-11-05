@@ -18,7 +18,16 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 # Locate melodious app directory
-HOMELAB_DIR="${HOMELAB_DIR:-$HOME/homelab}"
+HOMELAB_DIR="${HOMELAB_DIR:-}"
+if [[ -z "$HOMELAB_DIR" || ! -d "$HOMELAB_DIR/apps" ]]; then
+    GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+    if [[ -n "$GIT_ROOT" && -d "$GIT_ROOT/apps" ]]; then
+        HOMELAB_DIR="$GIT_ROOT"
+    elif [[ -d "$HOME/homelab/apps" ]]; then
+        HOMELAB_DIR="$HOME/homelab"
+    fi
+fi
+
 APP_DIR="$HOMELAB_DIR/apps/melodious"
 if [[ ! -d "$APP_DIR" && -d "$HOMELAB_DIR/melodious" ]]; then
     APP_DIR="$HOMELAB_DIR/melodious"

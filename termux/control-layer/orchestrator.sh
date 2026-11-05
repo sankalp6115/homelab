@@ -2,7 +2,17 @@
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Handle being run from inside control-layer/ or from repo root
+if [[ "$(basename "$SCRIPT_DIR")" == "control-layer" ]]; then
+    CONTROL_DIR="$SCRIPT_DIR"
+    BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+else
+    CONTROL_DIR="$SCRIPT_DIR/control-layer"
+    BASE_DIR="$SCRIPT_DIR"
+fi
+
 SYSTEM_SCRIPTS="$HOME/system_scripts"
 DEST_CONTROL="$SYSTEM_SCRIPTS/control-layer"
 
@@ -32,9 +42,10 @@ done
 echo ""
 echo "Installing control-layer commands → $DEST_CONTROL"
 
-for script in "$REPO_DIR/control-layer/"*.sh; do
+for script in "$CONTROL_DIR"/*.sh; do
     [ -f "$script" ] || continue
     base="$(basename "$script" .sh)"
+    [[ "$base" == "orchestrator" ]] && continue
     if [[ "$base" == "homelab" ]]; then
         # Install as bare 'homelab' command (no prefix)
         dest="$DEST_CONTROL/homelab"
@@ -49,9 +60,10 @@ done
 
 # ─── Remove stale unprefixed copies (from old installs) ──────────────────────
 
-for script in "$REPO_DIR/control-layer/"*.sh; do
+for script in "$CONTROL_DIR"/*.sh; do
     [ -f "$script" ] || continue
     base="$(basename "$script" .sh)"
+    [[ "$base" == "orchestrator" ]] && continue
     stale="$DEST_CONTROL/$base"
     if [[ -f "$stale" && "$base" != "homelab" ]]; then
         rm "$stale"
@@ -61,7 +73,7 @@ done
 
 # ─── Copy companion files (e.g. app-port-map.ini) ────────────────────────────
 
-for extra in "$REPO_DIR/control-layer/"*.ini "$REPO_DIR/control-layer/"*.conf; do
+for extra in "$CONTROL_DIR"/*.ini "$CONTROL_DIR"/*.conf; do
     [ -f "$extra" ] || continue
     filename="$(basename "$extra")"
     cp "$extra" "$DEST_CONTROL/$filename"
@@ -70,11 +82,14 @@ done
 
 # ─── Copy github-backup folder ────────────────────────────────────────────────
 
-echo ""
-echo "Syncing github-backup → $SYSTEM_SCRIPTS/github-backup"
-cp -r "$REPO_DIR/github-backup/." "$SYSTEM_SCRIPTS/github-backup/"
-chmod +x "$SYSTEM_SCRIPTS/github-backup/github-backup.py" 2>/dev/null || true
-echo "  ✓ github-backup synced"
+GITHUB_BACKUP_SRC="$BASE_DIR/github-backup"
+if [[ -d "$GITHUB_BACKUP_SRC" ]]; then
+    echo ""
+    echo "Syncing github-backup → $SYSTEM_SCRIPTS/github-backup"
+    cp -r "$GITHUB_BACKUP_SRC/." "$SYSTEM_SCRIPTS/github-backup/"
+    chmod +x "$SYSTEM_SCRIPTS/github-backup/github-backup.py" 2>/dev/null || true
+    echo "  ✓ github-backup synced"
+fi
 
 # ─── Done ─────────────────────────────────────────────────────────────────────
 
