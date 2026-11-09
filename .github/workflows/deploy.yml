@@ -31,84 +31,91 @@ jobs:
           path: deploy_repo
           fetch-depth: 0
 
-      - name: Build React frontends dynamically
+      - name: Build React frontends and assemble apps
         run: |
-          # Discover any app containing a frontend with a package.json
-          for pkg in source/apps/*/frontend/package.json; do
-            [ -f "$pkg" ] || continue
-            frontend_dir="$(dirname "$pkg")"
-            app_name="$(basename "$(dirname "$frontend_dir")")"
-
-            echo "::group::Building frontend for $app_name"
-            pushd "$frontend_dir" > /dev/null
-            npm ci
-            npm run build
-            popd > /dev/null
+          FRONTEND_APPS=("file_server" "home" "idea_inbox" "keybinder" "melodious" "monitor" "paper_boy" "quote" "yt_downloader")
+          
+          for app in "${FRONTEND_APPS[@]}"; do
+            echo "::group::Building frontend for $app"
+            if [ -d "source/apps/$app/frontend" ]; then
+              pushd "source/apps/$app/frontend"
+              npm ci
+              npm run build
+              popd
+            fi
             echo "::endgroup::"
           done
 
-      - name: Assemble deployment artifacts
-        run: |
-          # Define common exclusion rules in a temporary filter list
-          cat << 'EOF' > /tmp/deploy_excludes
-          node_modules/
-          __pycache__/
-          *.pyc
-          *.pyo
-          .pytest_cache/
-          .venv/
-          venv/
-          .env
-          .DS_Store
-          Thumbs.db
-          EOF
+          ALL_APPS=("file_server" "home" "idea_inbox" "keybinder" "melodious" "monitor" "no-as-a-service" "paper_boy" "quote" "yt_downloader" "macdock")
 
-          # 1. Sync root-level files and shared repos (excluding git metadata and apps)
-          rsync -av --delete \
-            --exclude='.git/' \
-            --exclude='.github/' \
-            --exclude='apps/' \
-            --exclude-from=/tmp/deploy_excludes \
-            source/ deploy_repo/
-
-          # 2. Sync root files inside source/apps (homelab-env.yaml, scripts, etc.) without recursing subdirectories
-          rsync -av \
-            --exclude='*/' \
-            --exclude-from=/tmp/deploy_excludes \
-            source/apps/ deploy_repo/apps/
-
-          # 3. Dynamically assemble each app under source/apps/
-          for app_path in source/apps/*/; do
-            [ -d "$app_path" ] || continue
-            app="$(basename "$app_path")"
-            target_app_dir="deploy_repo/apps/$app"
-
+          for app in "${ALL_APPS[@]}"; do
             echo "Assembling $app in deploy repo..."
-            rm -rf "$target_app_dir"
-            mkdir -p "$target_app_dir"
+            rm -rf "deploy_repo/apps/$app"
+            mkdir -p "deploy_repo/apps/$app"
 
-            # Copy backend, configs, assets, excluding the raw frontend folder
+            # Copy all app content (backend, assets, start.sh, data files) except raw unbuilt frontend source & heavy artifacts
             rsync -av \
-              --exclude='frontend/' \
-              --exclude-from=/tmp/deploy_excludes \
-              "$app_path" "$target_app_dir/"
+              --exclude='frontend' \
+              --exclude='node_modules' \
+              --exclude='__pycache__' \
+              --exclude='*.pyc' \
+              --exclude='*.pyo' \
+              --exclude='.pytest_cache' \
+              --exclude='.venv' \
+              --exclude='venv' \
+              --exclude='.env' \
+              --exclude='.DS_Store' \
+              --exclude='Thumbs.db' \
+              "source/apps/$app/" "deploy_repo/apps/$app/"
 
-            # If a built dist exists, copy it over
-            if [ -d "${app_path}frontend/dist" ]; then
-              mkdir -p "$target_app_dir/frontend/dist"
-              rsync -a "${app_path}frontend/dist/" "$target_app_dir/frontend/dist/"
+            # Copy built frontend dist if present
+            if [ -d "source/apps/$app/frontend/dist" ]; then
+              mkdir -p "deploy_repo/apps/$app/frontend/dist"
+              rsync -a "source/apps/$app/frontend/dist/" "deploy_repo/apps/$app/frontend/dist/"
             fi
           done
+
+      - name: Copy integrated repos and common files
+        run: |
+          # Copy top-level repos (gotify, termux_bootstrap, termux_scripting, etc.) excluding heavy artifacts
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='apps' \
+            --exclude='node_modules' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='*.pyo' \
+            --exclude='.pytest_cache' \
+            --exclude='.venv' \
+            --exclude='venv' \
+            --exclude='.env' \
+            --exclude='.DS_Store' \
+            --exclude='Thumbs.db' \
+            source/ deploy_repo/
+
+          # Copy top-level apps files (homelab-env.yaml, requirements.txt, scripts, etc.) excluding raw app sources
+          rsync -av \
+            --exclude='*/' \
+            --exclude='node_modules' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='.venv' \
+            --exclude='venv' \
+            --exclude='.env' \
+            --exclude='.DS_Store' \
+            --exclude='Thumbs.db' \
+            source/apps/ deploy_repo/apps/
 
       - name: Commit and push single deployment
         working-directory: deploy_repo
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-
-          # Force add dist folders in case top-level .gitignore ignores 'dist/'
+          
+          # Force add dist directories in case .gitignore excludes dist/
           find apps -type d -name "dist" -exec git add -f {} + 2>/dev/null || true
-
+          
           git add .
           if git diff --staged --quiet; then
             echo "Nothing to commit"
