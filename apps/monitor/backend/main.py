@@ -44,15 +44,33 @@ async def favicon():
 async def serve_spa(full_path: str):
     return FileResponse(FRONTEND_FOLDER / "index.html")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Backend Server")
-    parser.add_argument("--port", type=int, default=8000, help="Port to bind the server to")
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser(description="Backend Server")
+#     parser.add_argument("--port", type=int, default=8000, help="Port to bind the server to")
+#     args = parser.parse_args()
+
+#     if gotify:
+#         try:
+#             gotify.info("Monitor Server Up", f"Monitor Server started on port {args.port}")
+#         except Exception:
+#             pass
+
+#     uvicorn.run("main:app", port=args.port, host="0.0.0.0")
+
+def main():
+    global RUNNING_MODE, PORT
+    parser = argparse.ArgumentParser(description="Homelab System Monitor Agent & Central Dashboard Server")
+    parser.add_argument("--mode", type=str, choices=["agent", "central"], default="central",
+                        help="Run mode: 'agent' to just expose API metrics, 'central' to run dashboard server & scanner")
+    parser.add_argument("--port", type=int, default=18000,
+                        help="Port to run the service on (default: 18000)")
+    parser.add_argument("--host", type=str, default="0.0.0.0",
+                        help="Host IP to bind the service (default: 0.0.0.0)")
     args = parser.parse_args()
 
-    if gotify:
-        try:
-            gotify.info("Monitor Server Up", f"Monitor Server started on port {args.port}")
-        except Exception:
-            pass
+    RUNNING_MODE = args.mode
+    PORT = args.port
 
-    uvicorn.run("main:app", port=args.port, host="0.0.0.0")
+    logger.info(f"Starting homelab-monitor in {RUNNING_MODE} mode on port {PORT}...")
+    uvicorn.run(app, host=args.host, port=args.port)
+

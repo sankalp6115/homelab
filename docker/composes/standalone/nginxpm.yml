@@ -1,0 +1,27 @@
+services:
+  app:
+    image: 'jc21/nginx-proxy-manager:2.16.0'
+    restart: unless-stopped
+
+    ports:
+      - "${NGINXPM_HTTP_PORT:-80}:80"
+      - "${NGINXPM_HTTPS_PORT:-443}:443"
+      - "${NGINXPM_ADMIN_PORT:-81}:81"
+
+    volumes:
+      - "${DATA_ROOT}/nginxpm:/app/data"
+      - "${CERTIFICATE_ROOT}:/etc/letsencrypt"
+
+    environment:
+      TZ: ${TZ}
+      
+    networks:
+      - homelab
+
+    labels:
+      homelab.service: "nginxpm"
+      homelab.group: "standalone"
+
+networks:
+  homelab:
+    external: true

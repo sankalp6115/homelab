@@ -15,7 +15,6 @@ archive
 .DS_Store
 certs
 venv
-frontend-sep
 dist
 
 # yt-downloader
@@ -63,3 +62,4 @@ apps/paper_boy/frontend/assets/overlay/*
 # docker composes
 docker/data
 docker/docker
+legacy

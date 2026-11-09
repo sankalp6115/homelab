@@ -28,8 +28,6 @@ services:
       - homelab
 
     labels:
-      # Stub for future reverse-proxy (Traefik / nginx-proxy) labels.
-      # traefik.enable: "false"
       homelab.service: "uptime-kuma"
       homelab.group: "standalone"
 
